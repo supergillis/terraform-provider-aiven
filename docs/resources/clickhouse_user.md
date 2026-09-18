@@ -43,6 +43,7 @@ resource "aiven_clickhouse_user" "example" {
 - `password` (String, Sensitive) The password of the service user (auto-generated if not provided). The field conflicts with `password_wo`. Length must be between `8` and `256`.
 - `password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The password of the service user (write-only, not stored in state). The field is required with `password_wo_version`. The field conflicts with `password`. Length must be between `8` and `256`.
 - `password_wo_version` (Number) Version number for `password_wo`. Increment this to rotate the password. The field is required with `password_wo`. Minimum value: `1`.
+- `settings` (Attributes Map) Direct ClickHouse settings for the user. Omit this attribute to leave direct settings unmanaged. Set it to an empty map to remove all direct settings. The API token requires the `service:data:write` permission. (see [below for nested schema](#nestedatt--settings))
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
@@ -50,6 +51,16 @@ resource "aiven_clickhouse_user" "example" {
 - `id` (String) Resource ID composed as: `project/service_name/uuid`.
 - `required` (Boolean) Required user.
 - `uuid` (String) User identifier.
+
+<a id="nestedatt--settings"></a>
+### Nested Schema for `settings`
+
+Optional:
+
+- `max` (String) Maximum allowed value.
+- `min` (String) Minimum allowed value.
+- `value` (String) Setting value.
+- `writability` (String) Whether the setting can be changed by the user. The possible values are `WRITABLE`, `CONST`, and `CHANGEABLE_IN_READONLY`.
 
 <a id="nestedblock--timeouts"></a>
 ### Nested Schema for `timeouts`

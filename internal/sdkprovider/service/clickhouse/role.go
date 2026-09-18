@@ -8,6 +8,8 @@ import (
 	"strings"
 
 	"github.com/aiven/aiven-go-client/v2"
+
+	"github.com/aiven/terraform-provider-aiven/internal/clickhousesql"
 )
 
 func isUnknownRole(err error) bool {
@@ -53,13 +55,13 @@ func DropRole(ctx context.Context, client *aiven.Client, projectName, serviceNam
 }
 
 func createRoleStatement(roleName string) string {
-	return fmt.Sprintf("CREATE ROLE IF NOT EXISTS %s", escape(roleName))
+	return fmt.Sprintf("CREATE ROLE IF NOT EXISTS %s", clickhousesql.QuoteIdentifier(roleName))
 }
 
 func dropRoleStatement(roleName string) string {
-	return fmt.Sprintf("DROP ROLE IF EXISTS %s", escape(roleName))
+	return fmt.Sprintf("DROP ROLE IF EXISTS %s", clickhousesql.QuoteIdentifier(roleName))
 }
 
 func showCreateRoleStatement(roleName string) string {
-	return fmt.Sprintf("SHOW CREATE ROLE %s", escape(roleName))
+	return fmt.Sprintf("SHOW CREATE ROLE %s", clickhousesql.QuoteIdentifier(roleName))
 }

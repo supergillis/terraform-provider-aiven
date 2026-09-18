@@ -9,6 +9,8 @@ import (
 
 	"github.com/aiven/aiven-go-client/v2"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+
+	"github.com/aiven/terraform-provider-aiven/internal/clickhousesql"
 )
 
 type Grantee struct {
@@ -177,11 +179,11 @@ func RevokePrivilegeGrant(
 }
 
 func createRoleGrantStatement(grant RoleGrant) string {
-	return fmt.Sprintf("GRANT %s TO %s", escape(grant.Role), escape(userOrRole(grant.Grantee)))
+	return fmt.Sprintf("GRANT %s TO %s", clickhousesql.QuoteIdentifier(grant.Role), clickhousesql.QuoteIdentifier(userOrRole(grant.Grantee)))
 }
 
 func revokeRoleGrantStatement(grant RoleGrant) string {
-	return fmt.Sprintf("REVOKE %s FROM %s", escape(grant.Role), escape(userOrRole(grant.Grantee)))
+	return fmt.Sprintf("REVOKE %s FROM %s", clickhousesql.QuoteIdentifier(grant.Role), clickhousesql.QuoteIdentifier(userOrRole(grant.Grantee)))
 }
 
 func readRoleGrantsStatement() string {
@@ -196,23 +198,23 @@ func createPrivilegeGrantStatement(grant PrivilegeGrant) string {
 	b.WriteString(grant.Privilege)
 
 	if len(grant.Column) > 0 {
-		b.WriteString(fmt.Sprintf("(%s)", escape(grant.Column)))
+		b.WriteString(fmt.Sprintf("(%s)", clickhousesql.QuoteIdentifier(grant.Column)))
 	}
 
 	// do not escape the asterisk as it is a wildcard
 	if grant.Database == "*" {
 		b.WriteString(" ON *")
 	} else {
-		b.WriteString(fmt.Sprintf(" ON %s", escape(grant.Database)))
+		b.WriteString(fmt.Sprintf(" ON %s", clickhousesql.QuoteIdentifier(grant.Database)))
 	}
 
 	if len(grant.Table) > 0 {
-		b.WriteString(fmt.Sprintf(".%s", escape(grant.Table)))
+		b.WriteString(fmt.Sprintf(".%s", clickhousesql.QuoteIdentifier(grant.Table)))
 	} else {
 		b.WriteString(".*")
 	}
 
-	b.WriteString(fmt.Sprintf(" TO %s", escape(userOrRole(grant.Grantee))))
+	b.WriteString(fmt.Sprintf(" TO %s", clickhousesql.QuoteIdentifier(userOrRole(grant.Grantee))))
 
 	if grant.WithGrant {
 		b.WriteString(" WITH GRANT OPTION")
@@ -229,23 +231,23 @@ func revokePrivilegeGrantStatement(grant PrivilegeGrant) string {
 	b.WriteString(grant.Privilege)
 
 	if len(grant.Column) > 0 {
-		b.WriteString(fmt.Sprintf("(%s)", escape(grant.Column)))
+		b.WriteString(fmt.Sprintf("(%s)", clickhousesql.QuoteIdentifier(grant.Column)))
 	}
 
 	// do not escape the asterisk as it is a wildcard
 	if grant.Database == "*" {
 		b.WriteString(" ON *")
 	} else {
-		b.WriteString(fmt.Sprintf(" ON %s", escape(grant.Database)))
+		b.WriteString(fmt.Sprintf(" ON %s", clickhousesql.QuoteIdentifier(grant.Database)))
 	}
 
 	if len(grant.Table) > 0 {
-		b.WriteString(fmt.Sprintf(".%s", escape(grant.Table)))
+		b.WriteString(fmt.Sprintf(".%s", clickhousesql.QuoteIdentifier(grant.Table)))
 	} else {
 		b.WriteString(".*")
 	}
 
-	b.WriteString(fmt.Sprintf(" FROM %s", escape(userOrRole(grant.Grantee))))
+	b.WriteString(fmt.Sprintf(" FROM %s", clickhousesql.QuoteIdentifier(userOrRole(grant.Grantee))))
 	return b.String()
 }
 

@@ -9,21 +9,48 @@ import (
 )
 
 func init() {
-	ResourceOptions.Update = updateViewPasswordOnly
+	ResourceOptions.Create = createUser
+	ResourceOptions.Read = readUser
+	ResourceOptions.Update = updateUser
+	ResourceOptions.Schema = resourceSchemaWithSettings
+	ResourceOptions.SchemaInternal.Properties["settings"] = settingsSchemaInternal()
 }
 
-func updateViewPasswordOnly(ctx context.Context, client avngen.Client, d adapter.ResourceData) error {
-	if d.HasChange("password") || d.HasChange("password_wo_version") {
-		// We don't want to run updateView unless the password has changed,
-		// since running it unnecessarily would reset the password when it was not provided by the user.
-		// Currently, the password is the only attribute that can be updated,
-		// so this function should only be called in this case.
-		// However, in the future, new fields may be added that can be updated,
-		// so this "if" statement becomes a safety net.
-		return updateView(ctx, client, d)
+func createUser(ctx context.Context, client avngen.Client, d adapter.ResourceData) error {
+	if err := createView(ctx, client, d); err != nil {
+		return err
 	}
 
-	return nil
+	return reconcileConfiguredSettings(ctx, client, d)
+}
+
+func readUser(ctx context.Context, client avngen.Client, d adapter.ResourceData) error {
+	if err := readView(ctx, client, d); err != nil {
+		return err
+	}
+
+	if _, ok := d.GetOk("settings"); !ok {
+		return nil
+	}
+
+	settings, err := readSettings(ctx, client, d)
+	if err != nil {
+		return err
+	}
+	return d.Set("settings", settings)
+}
+
+func updateUser(ctx context.Context, client avngen.Client, d adapter.ResourceData) error {
+	if d.HasChange("password") || d.HasChange("password_wo_version") {
+		if err := updateView(ctx, client, d); err != nil {
+			return err
+		}
+	}
+
+	if !d.HasChange("settings") {
+		return nil
+	}
+	return reconcileConfiguredSettings(ctx, client, d)
 }
 
 func expandModifier(_ context.Context, _ avngen.Client) adapter.MapModifier {
