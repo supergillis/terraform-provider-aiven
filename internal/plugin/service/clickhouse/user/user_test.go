@@ -163,6 +163,49 @@ func TestAccAivenClickHouseUser(t *testing.T) {
 		})
 	})
 
+	t.Run("settings lifecycle", func(t *testing.T) {
+		resourceName := "aiven_clickhouse_user.foo"
+		userName := acc.RandName("user")
+
+		resource.ParallelTest(t, resource.TestCase{
+			PreCheck:                 func() { acc.TestAccPreCheck(t) },
+			ProtoV6ProviderFactories: acc.TestProtoV6ProviderFactories,
+			CheckDestroy:             testAccCheckAivenClickHouseUserResourceDestroy,
+			Steps: []resource.TestStep{
+				{
+					PreConfig: func() {
+						require.NoError(t, <-serviceIsReady)
+					},
+					Config: testAccClickHouseUserWithSettings(projectName, serviceName, userName),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceName, "settings.%", "2"),
+						resource.TestCheckResourceAttr(resourceName, "settings.max_execution_time.value", "60"),
+						resource.TestCheckResourceAttr(resourceName, "settings.max_execution_time.max", "60"),
+						resource.TestCheckResourceAttr(resourceName, "settings.max_execution_time.writability", "WRITABLE"),
+						resource.TestCheckResourceAttr(resourceName, "settings.max_result_rows.value", "1000000"),
+						resource.TestCheckResourceAttr(resourceName, "settings.max_result_rows.max", "1000000"),
+						resource.TestCheckResourceAttr(resourceName, "settings.max_result_rows.writability", "CONST"),
+					),
+				},
+				{
+					Config: testAccClickHouseUserWithUpdatedSettings(projectName, serviceName, userName),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceName, "settings.%", "1"),
+						resource.TestCheckResourceAttr(resourceName, "settings.max_execution_time.value", "30"),
+						resource.TestCheckResourceAttr(resourceName, "settings.max_execution_time.max", "30"),
+						resource.TestCheckResourceAttr(resourceName, "settings.max_execution_time.writability", "WRITABLE"),
+					),
+				},
+				{
+					Config: testAccClickHouseUserWithEmptySettings(projectName, serviceName, userName),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceName, "settings.%", "0"),
+					),
+				},
+			},
+		})
+	})
+
 	t.Run("remove missing", func(t *testing.T) {
 		resourceName := "aiven_clickhouse_user.foo"
 		userName := acc.RandName("user")
@@ -426,6 +469,56 @@ data "aiven_clickhouse_user" "by_uuid" {
   depends_on = [aiven_clickhouse_user.foo]
 }
 `, project, serviceName, userName, password, version)
+}
+
+func testAccClickHouseUserWithSettings(project, serviceName, userName string) string {
+	return fmt.Sprintf(`
+resource "aiven_clickhouse_user" "foo" {
+  project      = %[1]q
+  service_name = %[2]q
+  username     = %[3]q
+
+  settings = {
+    max_execution_time = {
+      value = "60"
+      max   = "60"
+    }
+    max_result_rows = {
+      value       = "1000000"
+      max         = "1000000"
+      writability = "CONST"
+    }
+  }
+}
+`, project, serviceName, userName)
+}
+
+func testAccClickHouseUserWithUpdatedSettings(project, serviceName, userName string) string {
+	return fmt.Sprintf(`
+resource "aiven_clickhouse_user" "foo" {
+  project      = %[1]q
+  service_name = %[2]q
+  username     = %[3]q
+
+  settings = {
+    max_execution_time = {
+      value = "30"
+      max   = "30"
+    }
+  }
+}
+`, project, serviceName, userName)
+}
+
+func testAccClickHouseUserWithEmptySettings(project, serviceName, userName string) string {
+	return fmt.Sprintf(`
+resource "aiven_clickhouse_user" "foo" {
+  project      = %[1]q
+  service_name = %[2]q
+  username     = %[3]q
+  settings     = {}
+}
+`, project, serviceName, userName)
 }
 
 func testAccClickHouseUserWithoutPasswordResourceOnly(project, serviceName, userName string) string {
