@@ -177,11 +177,11 @@ func RevokePrivilegeGrant(
 }
 
 func createRoleGrantStatement(grant RoleGrant) string {
-	return fmt.Sprintf("GRANT %s TO %s", escape(grant.Role), escape(userOrRole(grant.Grantee)))
+	return fmt.Sprintf("GRANT %s TO %s", Escape(grant.Role), Escape(userOrRole(grant.Grantee)))
 }
 
 func revokeRoleGrantStatement(grant RoleGrant) string {
-	return fmt.Sprintf("REVOKE %s FROM %s", escape(grant.Role), escape(userOrRole(grant.Grantee)))
+	return fmt.Sprintf("REVOKE %s FROM %s", Escape(grant.Role), Escape(userOrRole(grant.Grantee)))
 }
 
 func readRoleGrantsStatement() string {
@@ -196,23 +196,23 @@ func createPrivilegeGrantStatement(grant PrivilegeGrant) string {
 	b.WriteString(grant.Privilege)
 
 	if len(grant.Column) > 0 {
-		b.WriteString(fmt.Sprintf("(%s)", escape(grant.Column)))
+		b.WriteString(fmt.Sprintf("(%s)", Escape(grant.Column)))
 	}
 
 	// do not escape the asterisk as it is a wildcard
 	if grant.Database == "*" {
 		b.WriteString(" ON *")
 	} else {
-		b.WriteString(fmt.Sprintf(" ON %s", escape(grant.Database)))
+		b.WriteString(fmt.Sprintf(" ON %s", Escape(grant.Database)))
 	}
 
 	if len(grant.Table) > 0 {
-		b.WriteString(fmt.Sprintf(".%s", escape(grant.Table)))
+		b.WriteString(fmt.Sprintf(".%s", Escape(grant.Table)))
 	} else {
 		b.WriteString(".*")
 	}
 
-	b.WriteString(fmt.Sprintf(" TO %s", escape(userOrRole(grant.Grantee))))
+	b.WriteString(fmt.Sprintf(" TO %s", Escape(userOrRole(grant.Grantee))))
 
 	if grant.WithGrant {
 		b.WriteString(" WITH GRANT OPTION")
@@ -229,23 +229,23 @@ func revokePrivilegeGrantStatement(grant PrivilegeGrant) string {
 	b.WriteString(grant.Privilege)
 
 	if len(grant.Column) > 0 {
-		b.WriteString(fmt.Sprintf("(%s)", escape(grant.Column)))
+		b.WriteString(fmt.Sprintf("(%s)", Escape(grant.Column)))
 	}
 
 	// do not escape the asterisk as it is a wildcard
 	if grant.Database == "*" {
 		b.WriteString(" ON *")
 	} else {
-		b.WriteString(fmt.Sprintf(" ON %s", escape(grant.Database)))
+		b.WriteString(fmt.Sprintf(" ON %s", Escape(grant.Database)))
 	}
 
 	if len(grant.Table) > 0 {
-		b.WriteString(fmt.Sprintf(".%s", escape(grant.Table)))
+		b.WriteString(fmt.Sprintf(".%s", Escape(grant.Table)))
 	} else {
 		b.WriteString(".*")
 	}
 
-	b.WriteString(fmt.Sprintf(" FROM %s", escape(userOrRole(grant.Grantee))))
+	b.WriteString(fmt.Sprintf(" FROM %s", Escape(userOrRole(grant.Grantee))))
 	return b.String()
 }
 

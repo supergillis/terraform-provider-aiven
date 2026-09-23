@@ -53,13 +53,13 @@ func DropRole(ctx context.Context, client *aiven.Client, projectName, serviceNam
 }
 
 func createRoleStatement(roleName string) string {
-	return fmt.Sprintf("CREATE ROLE IF NOT EXISTS %s", escape(roleName))
+	return fmt.Sprintf("CREATE ROLE IF NOT EXISTS %s", Escape(roleName))
 }
 
 func dropRoleStatement(roleName string) string {
-	return fmt.Sprintf("DROP ROLE IF EXISTS %s", escape(roleName))
+	return fmt.Sprintf("DROP ROLE IF EXISTS %s", Escape(roleName))
 }
 
 func showCreateRoleStatement(roleName string) string {
-	return fmt.Sprintf("SHOW CREATE ROLE %s", escape(roleName))
+	return fmt.Sprintf("SHOW CREATE ROLE %s", Escape(roleName))
 }

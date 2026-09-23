@@ -5,38 +5,46 @@ import (
 	"fmt"
 )
 
-func escape(identifier string) string {
-	return escapeBytes([]byte(identifier))
+// Escape quotes and escapes a ClickHouse identifier for use in a statement.
+func Escape(identifier string) string {
+	return quote([]byte(identifier), '`')
 }
 
-func escapeBytes(identifier []byte) string {
-	escapeMap := map[byte]string{
-		0:    "\\0",
-		'\b': "\\b",
-		'\f': "\\f",
-		'\r': "\\r",
-		'\n': "\\n",
-		'\t': "\\t",
-		'\\': "\\\\",
-		'`':  "\\`",
-	}
+// QuoteString quotes and escapes a ClickHouse string literal for use in a statement.
+func QuoteString(value string) string {
+	return quote([]byte(value), '\'')
+}
+
+func quote(value []byte, delimiter byte) string {
 	buf := new(bytes.Buffer)
-	buf.WriteByte('`')
+	buf.WriteByte(delimiter)
 
-	for i := range identifier {
-		b := identifier[i]
-
-		escaped, ok := escapeMap[b]
-		switch {
-		case ok:
-			buf.WriteString(escaped)
-		case b < 0x20 || b > 0x7e:
-			buf.WriteString(fmt.Sprintf("\\x%02x", b))
-		default:
+	for _, b := range value {
+		switch b {
+		case 0:
+			buf.WriteString("\\0")
+		case '\b':
+			buf.WriteString("\\b")
+		case '\f':
+			buf.WriteString("\\f")
+		case '\r':
+			buf.WriteString("\\r")
+		case '\n':
+			buf.WriteString("\\n")
+		case '\t':
+			buf.WriteString("\\t")
+		case delimiter, '\\':
+			buf.WriteByte('\\')
 			buf.WriteByte(b)
+		default:
+			if b < 0x20 || b > 0x7e {
+				fmt.Fprintf(buf, "\\x%02x", b)
+			} else {
+				buf.WriteByte(b)
+			}
 		}
 	}
 
-	buf.WriteByte('`')
+	buf.WriteByte(delimiter)
 	return buf.String()
 }
