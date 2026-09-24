@@ -262,16 +262,23 @@ func exampleItemValue(def *Definition, entity entityType, item *Item) (cty.Value
 			}
 			attrs[k] = value
 		}
-		return cty.ObjectVal(map[string]cty.Value{"foo": cty.ObjectVal(attrs)}), nil
+		return cty.ObjectVal(map[string]cty.Value{exampleMapKey(item): cty.ObjectVal(attrs)}), nil
 	case item.IsMap():
 		value, err := exampleScalarItem(def, item.Items)
 		if err != nil {
 			return cty.NilVal, err
 		}
-		return cty.ObjectVal(map[string]cty.Value{"foo": value}), nil
+		return cty.ObjectVal(map[string]cty.Value{exampleMapKey(item): value}), nil
 	default:
 		return cty.NilVal, fmt.Errorf("unknown property type %q for %s", item.Type, item.Path())
 	}
+}
+
+func exampleMapKey(item *Item) string {
+	if key, ok := item.Example.(string); ok && key != "" {
+		return key
+	}
+	return "foo"
 }
 
 const uuidExample = "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d"

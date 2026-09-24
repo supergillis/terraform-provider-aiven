@@ -1,0 +1,43 @@
+# yaml-language-server: $schema=.schema.yml
+location: internal/plugin/service/clickhouse/usersettings
+resource:
+  removeMissing: true
+  description: >-
+    Manages the direct ClickHouse settings of an Aiven for ClickHouse user. Use one resource per user: it owns all
+    direct settings of the user, so settings missing from `settings` are removed. Deleting the resource removes all
+    direct settings of the user. The API token requires the `service:data:write` permission.
+idAttributeComposed: [project, service_name, username]
+operations:
+  - id: ServiceClickHouseQuery
+    type: create
+  - id: ServiceClickHouseQuery
+    type: read
+  - id: ServiceClickHouseQuery
+    type: update
+  - id: ServiceClickHouseQuery
+    type: delete
+remove:
+  - database
+  - query
+  - data
+  - meta
+  - summary
+schema:
+  username:
+    type: string
+    required: true
+    forceNew: true
+    maxLength: 64
+    description: Name of the ClickHouse user.
+    example: alice
+  settings:
+    type: object
+    required: true
+    example: max_execution_time
+    description: >-
+      Direct ClickHouse settings for the user, keyed by setting name, with values written exactly as ClickHouse
+      stores them in `system.settings_profile_elements`. Set `{}` to remove them all.
+    additionalProperties:
+      type: string
+      minLength: 1
+      example: "60"

@@ -12,6 +12,8 @@ nav_order: 1
 
 ## [MAJOR.MINOR.PATCH] - YYYY-MM-DD
 
+- Add `aiven_clickhouse_user_settings` resource: direct ClickHouse settings of a user. The API token requires
+  the `service:data:write` permission.
 - Fix `aiven_organization_user` data source incorrectly inheriting the deprecation warning from the deprecated resource
   of the same name.
 - Change `aiven_account_team_project` field `team_type` (enum): add `organization:groups:read`, `organization:users:read`, `role:project:manager`

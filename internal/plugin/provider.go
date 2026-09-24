@@ -17,6 +17,7 @@ import (
 	"github.com/aiven/terraform-provider-aiven/internal/common"
 	"github.com/aiven/terraform-provider-aiven/internal/plugin/errmsg"
 	"github.com/aiven/terraform-provider-aiven/internal/plugin/providerdata"
+	"github.com/aiven/terraform-provider-aiven/internal/plugin/service/clickhouse/usersettings"
 	"github.com/aiven/terraform-provider-aiven/internal/plugin/service/externalidentity"
 	"github.com/aiven/terraform-provider-aiven/internal/plugin/service/organization/groupproject"
 	"github.com/aiven/terraform-provider-aiven/internal/plugin/service/organization/organization"
@@ -166,6 +167,7 @@ func New(version string) provider.Provider {
 // ResourcesMap used to generate PLUGIN_MIGRATION.md report. See usage.
 func ResourcesMap() map[string]func() resource.Resource {
 	result := map[string]func() resource.Resource{
+		"aiven_clickhouse_user_settings":   usersettings.NewResource,
 		"aiven_organization":               organization.NewResource,
 		"aiven_organization_group_project": groupproject.NewResource,
 		"aiven_organization_permission":    permission.NewResource,

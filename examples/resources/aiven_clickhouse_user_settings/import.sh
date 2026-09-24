@@ -1,0 +1,1 @@
+terraform import aiven_clickhouse_user_settings.example PROJECT/SERVICE_NAME/USERNAME
